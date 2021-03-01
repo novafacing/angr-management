@@ -10,3 +10,4 @@ from .interaction_view import InteractionView
 from .sync_view import SyncView
 from .patches_view import PatchesView
 from .dep_view import DependencyView
+from .proximity_view import ProximityView

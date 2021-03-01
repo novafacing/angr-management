@@ -11,7 +11,7 @@ from ..config import Conf
 from ..data.instance import ObjectContainer
 from ..data.jobs import CodeTaggingJob, PrototypeFindingJob, VariableRecoveryJob
 from .views import (FunctionsView, DisassemblyView, SymexecView, StatesView, StringsView, ConsoleView, CodeView,
-                    InteractionView, SyncView, PatchesView, DependencyView, )
+                    InteractionView, SyncView, PatchesView, DependencyView, ProximityView)
 from .widgets.qsmart_dockwidget import QSmartDockWidget
 from .view_manager import ViewManager
 
@@ -46,6 +46,7 @@ class Workspace:
         self.default_tabs = [
             FunctionsView(self, 'left'),
             DisassemblyView(self, 'center'),
+            ProximityView(self, 'center'),
             CodeView(self, 'center'),
         ]
         if Conf.has_operation_mango:
@@ -271,6 +272,16 @@ class Workspace:
 
         view.decompile_current_function()
 
+    def view_proximity_for_current_function(self, view=None):
+        if view is None or view.category != "proximity":
+            view = self._get_or_create_proximity_view()
+
+        disasm_view = self._get_or_create_disassembly_view()
+        if disasm_view.current_function is not None:
+            view.function = disasm_view.current_function
+
+        self.raise_view(view)
+
     def position_cursor_on_decomp(self, view, curr_ins):
         if view is not None and curr_ins is not None:
             # get the Qt document
@@ -386,6 +397,17 @@ class Workspace:
             # Create a new interaction view
             view = InteractionView(self, 'right')
             self.add_view(view, view.caption, view.category)
+        return view
+
+    def _get_or_create_proximity_view(self) -> ProximityView:
+        # Take the first proximity view
+        view = self.view_manager.first_view_in_category("proximity")
+
+        if view is None:
+            # Create a new proximity view
+            view = ProximityView(self, 'center')
+            self.add_view(view, view.caption, view.category)
+
         return view
 
     #
